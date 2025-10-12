@@ -1,17 +1,27 @@
 package sdu.coopbank.kb.account.statement.engine.controller;
 
+import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sdu.coopbank.kb.account.statement.engine.dto.AccountStatementModule;
+import sdu.coopbank.kb.account.statement.engine.dto.StatementModel;
 import sdu.coopbank.kb.account.statement.engine.dto.UserCreateRequest;
+import sdu.coopbank.kb.account.statement.engine.entity.AccountManagement;
+import sdu.coopbank.kb.account.statement.engine.entity.PrintHistory;
 import sdu.coopbank.kb.account.statement.engine.entity.User;
 import sdu.coopbank.kb.account.statement.engine.service.UserService;
+import sdu.coopbank.kb.account.statement.engine.serviceimpl.UserServiceImpl;
 
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -19,8 +29,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class UserController {
-
+    public HashMap<String, String> params;
     private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
 
     @GetMapping("/findAll")
     public Page<User> findAll(@RequestParam("start") int start,
@@ -37,6 +48,44 @@ public class UserController {
         }
     }
 
+    @GetMapping("/findAllPrintHistory")
+    public Page<PrintHistory> findAllPrintHistory(@RequestParam("start") int start,
+                                            @RequestParam("length") int length,
+                                            @RequestParam(value = "searchVal", required = false) String searchVal,
+                                            @RequestParam(defaultValue = "id,desc") String[] sort) {
+        log.info("start {} length {}", start, length);
+        Sort.Direction direction = Sort.Direction.fromString(sort[1]);
+        Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sort[0]));
+        if (searchVal != null && !searchVal.isEmpty()) {
+            return userService.findPrintHistoryByEmailContainingIgnoreCase(searchVal, pageable);
+        } else {
+            return userService.findAllPrintHistory(pageable);
+        }
+    }
+
+    @GetMapping("/findAllAccountManagement")
+    public Page<AccountManagement> findAllAccountManagement(@RequestParam("start") int start,
+                                                            @RequestParam("length") int length,
+                                                            @RequestParam(value = "searchVal", required = false) String searchVal,
+                                                            @RequestParam(defaultValue = "id,desc") String[] sort) {
+        log.info("findAllAccountManagement => start={} length={} sort={} searchVal={}",
+                start, length, Arrays.toString(sort), searchVal);
+
+        // ✅ Defensive check — avoid IndexOutOfBounds if client sends malformed sort param
+        String sortField = sort.length > 0 ? sort[0] : "id";
+        String sortDir = sort.length > 1 ? sort[1] : "desc";
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDir.toUpperCase());
+//        Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sort[0]));
+        Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sortField));
+        if (searchVal != null && !searchVal.trim().isEmpty()) {
+            return userService.findAccountManagementByEmailContainingIgnoreCase(
+                    searchVal.trim(), pageable);
+        } else {
+            return userService.findAllAccountManagement(pageable);
+        }
+    }
+
     @PostMapping("/create")
     public ResponseEntity<User> create(@RequestBody UserCreateRequest userCreateRequest) {
         User user = userService.create(userCreateRequest);
@@ -49,6 +98,33 @@ public class UserController {
         User user = userService.edit(userCreateRequest);
         log.info("user {}", user);
         return ResponseEntity.ok(user);
+    }
+
+    @PostMapping(value = "/accountStatement", consumes = "application/json; X-Content-Type-Options=nosnif", produces = "application/json")
+//    public ResponseEntity<AccountStatementModule> usersAccountStmList(@RequestBody StatementModel stm) {
+    public ResponseEntity<AccountStatementModule> usersAccountStmList() {
+        StatementModel stmdl = new StatementModel();
+//        stmdl.setAccountNo(stm.getAccountNo());
+//        stmdl.setStartDt(stm.getStartDt());
+//        stmdl.setEndDt(stm.getEndDt());
+        log.info("hello");
+        stmdl.setAccountNo("123456");
+        stmdl.setStartDt(new Date());
+        stmdl.setEndDt(new Date());
+
+        params = new HashMap<>();
+        // Date format yyyy-mm-dd
+        String pdfGen = null;
+        JsonObject resp = new JsonObject();
+        try {
+            pdfGen = userServiceImpl.generateAccountStatement(stmdl, params);
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            resp.addProperty("status", "FAIL");
+            resp.addProperty("status", "Statement generation was not successful!");
+            pdfGen = String.valueOf(resp);
+        }
+        return new ResponseEntity(pdfGen, HttpStatus.OK);
     }
 }
 

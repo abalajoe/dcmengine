@@ -38,7 +38,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         auth -> auth.requestMatchers(
                                         "/api/accountstatementengine/v1/auth/**",
-//                                        "/api/accountstatementengine/v1/user/**",
+                                        "/api/accountstatementengine/v1/user/**",
                                         "/v2/api-docs",
                                         "/v3/api-docs",
                                         "/v3/api-docs/**",
@@ -50,7 +50,7 @@ public class SecurityConfiguration {
                                         "/webjars/**",
                                         "/swagger-ui.html"
                                 ).permitAll()
-                                .requestMatchers("/api/accountstatementengine/v1/user/**").hasAnyRole("ROOT","MANAGER","CREATE_UPDATE","APPROVE","USER", "ADMIN")
+//                                .requestMatchers("/api/accountstatementengine/v1/user/**").hasAnyRole("ROOT","MANAGER","CREATE_UPDATE","APPROVE","USER", "ADMIN")
                                 .requestMatchers("/api/sca/v1/londonslip/**").hasAnyRole("ROOT","MANAGER","CREATE_UPDATE","APPROVE","USER", "ADMIN")
                                 .requestMatchers("/api/sca/v1/claim/**").hasAnyRole("ROOT","MANAGER","CREATE_UPDATE","APPROVE","USER", "ADMIN")
                                 .requestMatchers("/api/sca/v1/trialbalance/**").hasAnyRole("ADMIN","USER","SUPER_ADMIN","ROOT", "MANAGER")
