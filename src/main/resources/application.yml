@@ -6,7 +6,7 @@ spring:
     active: sit
 
 server:
-  port: 7081
+  port: 8082
 
   # JPA/Hibernate Configuration (common across all profiles)
   jpa:

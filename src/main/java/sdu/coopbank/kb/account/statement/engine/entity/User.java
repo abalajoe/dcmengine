@@ -9,6 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import javax.lang.model.element.Name;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -28,6 +29,8 @@ public class User implements UserDetails {
     private Long id;
     private String name;
     private String email;
+    @Column(name="ROLENAME")
+    private String roleName;
     private String password;
     @JsonFormat(pattern = "dd MMMM yyyy")
     private Date datecreated;

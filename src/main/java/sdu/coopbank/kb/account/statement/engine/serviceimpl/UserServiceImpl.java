@@ -11,20 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import sdu.coopbank.kb.account.statement.engine.dto.AccountStatementModule;
-import sdu.coopbank.kb.account.statement.engine.dto.StatementModel;
-import sdu.coopbank.kb.account.statement.engine.dto.UserCreateRequest;
-import sdu.coopbank.kb.account.statement.engine.entity.AccountManagement;
-import sdu.coopbank.kb.account.statement.engine.entity.PrintHistory;
-import sdu.coopbank.kb.account.statement.engine.entity.Role;
-import sdu.coopbank.kb.account.statement.engine.entity.User;
+import sdu.coopbank.kb.account.statement.engine.dto.*;
+import sdu.coopbank.kb.account.statement.engine.entity.*;
+import sdu.coopbank.kb.account.statement.engine.exception.EntityExistsException;
 import sdu.coopbank.kb.account.statement.engine.exception.EntityNotExistsException;
-import sdu.coopbank.kb.account.statement.engine.repository.AccountManagementRepository;
-import sdu.coopbank.kb.account.statement.engine.repository.PrintHistoryRepository;
-import sdu.coopbank.kb.account.statement.engine.repository.RoleRepository;
-import sdu.coopbank.kb.account.statement.engine.repository.UserRepository;
+import sdu.coopbank.kb.account.statement.engine.repository.*;
 import sdu.coopbank.kb.account.statement.engine.service.UserService;
 
 import java.io.File;
@@ -34,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,6 +41,11 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final PrintHistoryRepository printHistoryRepository;
     private final AccountManagementRepository accountManagementRepository;
+    private final ChargeWaiverRepository chargeWaiverRepository;
+    private final ConfigsRepository configsRepository;
+    private final DepartmentsRepository departmentsRepository;
+    private final RolesRepository rolesRepository;
+    private final StatusRepository statusRepository;
     private final PasswordEncoder passwordEncoder;
     @Autowired
     ResourceLoader resourceLoader;
@@ -66,6 +66,151 @@ public class UserServiceImpl implements UserService {
                 .password(passwordEncoder.encode("joe@123"))
                 .build();
         return userRepository.save(user);
+    }
+
+    @Override
+    public Department createDepartment(DepartmentDTO departmentDTO) {
+       try {
+           log.info("departmentDTO >> {}", departmentDTO);
+           Optional<Department> dept = departmentsRepository.findByNameIgnoreCase(departmentDTO.getName());
+           log.info("departmentDTO2 >> {}", dept);
+           if(dept.isPresent()) throw new EntityExistsException("The resource exists");
+           log.info("departmentDTO3 >> {}", dept);
+
+           Optional<Status> status = statusRepository.findById(2);
+           if (status.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+           Department department = Department.builder()
+                   .name(departmentDTO.getName())
+                   .description(departmentDTO.getDescription())
+                   .dateCreated(LocalDateTime.now())
+                   .dateUpdated(LocalDateTime.now())
+                   .createdBy("admin")
+                   .updatedBy("admin")
+                   .status(status.get())
+                   .build();
+           return departmentsRepository.save(department);
+       } catch (Exception e){
+           e.printStackTrace();
+           log.error("error - {}", e.getMessage());
+           return null;
+       }
+    }
+
+    @Override
+    public Roles createRole(RoleDTO roleDTO) {
+        try {
+            log.info("roleDTO >> {}", roleDTO);
+            Optional<Roles> role = rolesRepository.findByNameIgnoreCase(roleDTO.getName());
+            log.info("roleDTO2 >> {}", role);
+            if(role.isPresent()) throw new EntityExistsException("The resource exists");
+            Optional<Department> department = departmentsRepository.findById(roleDTO.getDepartment());
+            if(department.isEmpty()) throw new EntityExistsException("The resource does not exists");
+
+            Optional<Status> status = statusRepository.findById(2);
+            if (status.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+            Roles role1 = Roles.builder()
+                    .name(roleDTO.getName())
+                    .description(roleDTO.getDescription())
+                    .department(department.get())
+                    .dateCreated(LocalDateTime.now())
+                    .dateUpdated(LocalDateTime.now())
+                    .createdBy("admin")
+                    .updatedBy("admin")
+                    .status(status.get())
+                    .build();
+            return rolesRepository.save(role1);
+        } catch (Exception e){
+            e.printStackTrace();
+            log.error("error - {}", e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public Department updateDepartment(int id, DepartmentDTO departmentDTO) {
+        Optional<Department> department = departmentsRepository.findById(id);
+        if (department.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Status> status1 = statusRepository.findById(2);
+        if (status1.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Department department1 = department.get();
+        department1.setName(departmentDTO.getName());
+        department1.setDescription(departmentDTO.getDescription());
+        department1.setStatus(status1.get());
+        department1.setDateUpdated(LocalDateTime.now());
+        return departmentsRepository.save(department1);
+    }
+
+    @Override
+    public Department updateDepartmentStatus(int id, String action) {
+        Optional<Department> department = departmentsRepository.findById(id);
+        if (department.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Status> status1 = statusRepository.findById(1);
+        if (status1.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Status> status2 = statusRepository.findById(3);
+        if (status2.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Department department1 = department.get();
+        if ("approve".equalsIgnoreCase(action)) {
+            department1.setStatus(status1.get()); // or StatusEnum.APPROVED
+        } else if ("reject".equalsIgnoreCase(action)) {
+            department1.setStatus(status2.get());; // or StatusEnum.REJECTED
+        } else {
+            throw new IllegalArgumentException("Invalid action: must be approve or reject");
+        }
+
+        department1.setUpdatedBy(SecurityContextHolder.getContext().getAuthentication().getName());
+        department1.setDateUpdated(LocalDateTime.now());
+        return departmentsRepository.save(department1);
+    }
+
+    @Override
+    public Roles updateRole(int id, RoleDTO roleDTO) {
+        Optional<Roles> role = rolesRepository.findById(id);
+        if (role.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Status> status1 = statusRepository.findById(2);
+        if (status1.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Department> department = departmentsRepository.findById(roleDTO.getDepartment());
+        if(department.isEmpty()) throw new EntityExistsException("The resource exists");
+
+        Roles role1 = role.get();
+        role1.setName(roleDTO.getName());
+        role1.setDescription(roleDTO.getDescription());
+        role1.setDepartment(department.get());
+        role1.setStatus(status1.get());
+        role1.setDateUpdated(LocalDateTime.now());
+        return rolesRepository.save(role1);
+    }
+    @Override
+    public Roles updateRoleStatus(int id, String action) {
+        Optional<Roles> role = rolesRepository.findById(id);
+        if (role.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Status> status1 = statusRepository.findById(1);
+        if (status1.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Status> status2 = statusRepository.findById(3);
+        if (status2.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Roles role1 = role.get();
+        if ("approve".equalsIgnoreCase(action)) {
+            role1.setStatus(status1.get()); // or StatusEnum.APPROVED
+        } else if ("reject".equalsIgnoreCase(action)) {
+            role1.setStatus(status2.get());; // or StatusEnum.REJECTED
+        } else {
+            throw new IllegalArgumentException("Invalid action: must be approve or reject");
+        }
+
+        role1.setUpdatedBy(SecurityContextHolder.getContext().getAuthentication().getName());
+        role1.setDateUpdated(LocalDateTime.now());
+        return rolesRepository.save(role1);
     }
 
     @Override
@@ -106,11 +251,61 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Page<ChargeWaiver> findAllChargeWaiver(Pageable pageable) {
+        return chargeWaiverRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<ChargeWaiver> findAllChargeWaiver(String search, Pageable pageable) {
+        return chargeWaiverRepository.findAllByForacidContainingIgnoreCase(search, pageable);
+    }
+
+    @Override
+    public Page<Configs> findAllConfigs(Pageable pageable) {
+        return configsRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<Configs> findAllConfigs(String search, Pageable pageable) {
+        return configsRepository.findAllByParamContainingIgnoreCase(search, pageable);
+    }
+
+    @Override
     public Page<AccountManagement> findAccountManagementByEmailContainingIgnoreCase(String search, Pageable pageable) {
         log.info("hello");
 //        return accountManagementRepository.findByEmailContainingIgnoreCase(search,pageable);
         return accountManagementRepository.findByEmailContainingIgnoreCaseOrBranchContainingIgnoreCaseOrManagerContainingIgnoreCase(
                 search, search, search, pageable);
+    }
+
+    @Override
+    public Page<Department> findAllDepartments(Pageable pageable) {
+        return departmentsRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<Department> findAllDepartments(String search, Pageable pageable) {
+        return departmentsRepository.findAllByNameContainingIgnoreCase(search, pageable);
+    }
+
+    @Override
+    public List<Department> findAllDepartments() {
+        return departmentsRepository.findAll();
+    }
+
+    @Override
+    public Page<Roles> findAllRole(Pageable pageable) {
+        return rolesRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<Roles> findAllRole(String search, Pageable pageable) {
+        return rolesRepository.findAllByNameContainingIgnoreCase(search, pageable);
+    }
+
+    @Override
+    public List<Roles> findAllRole() {
+        return rolesRepository.findAll();
     }
 
     public String generateAccountStatement(StatementModel stmObj, Map<String, String> env) {

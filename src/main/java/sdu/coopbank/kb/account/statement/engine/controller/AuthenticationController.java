@@ -9,7 +9,8 @@ import sdu.coopbank.kb.account.statement.engine.dto.AuthenticationResponse;
 import sdu.coopbank.kb.account.statement.engine.service.AuthenticationService;
 
 @RestController
-@RequestMapping("/api/accountstatementengine/v1/auth")
+@RequestMapping("/api")
+//@RequestMapping("/api/accountstatementengine/v1/auth")
 @RequiredArgsConstructor
 @Slf4j
 public class AuthenticationController {
@@ -26,7 +27,8 @@ public class AuthenticationController {
         log.info("log2 - {}", logData);
     }
 
-    @PostMapping("/authenticate")
+//    @PostMapping("/authenticate")
+    @PostMapping("/userSignin")
     public ResponseEntity<AuthenticationResponse> authenticate(
             @RequestBody AuthenticationRequest request
     ) {

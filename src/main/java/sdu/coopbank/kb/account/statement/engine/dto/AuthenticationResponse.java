@@ -13,10 +13,14 @@ import sdu.coopbank.kb.account.statement.engine.entity.User;
 @NoArgsConstructor
 public class AuthenticationResponse {
 
-    @JsonProperty("access_token")
+    @JsonProperty("token")
     private String accessToken;
     @JsonProperty("refresh_token")
     private String refreshToken;
     @JsonProperty("user")
     private User user;
+    @JsonProperty("email")
+    private String email;
+    @JsonProperty("role")
+    private String roleName;
 }
