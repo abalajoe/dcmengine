@@ -337,7 +337,7 @@ public class UserController {
         return ResponseEntity.ok(manager);
     }
 
-    @PostMapping("/logcategory")
+    @PostMapping("/logCategory")
     public ResponseEntity<LogCategory> create(@RequestBody LogCategoryDTO logCategoryDTO) {
         log.info("logCategoryDTO {}", logCategoryDTO);
 
@@ -384,7 +384,7 @@ public class UserController {
         return ResponseEntity.ok(updated);
     }
 
-    @PutMapping("/logcategory/{id}")
+    @PutMapping("/logCategory/{id}")
     public ResponseEntity<LogCategory> updateLogCategory(
             @PathVariable int id,
             @RequestBody LogCategoryDTO logCategoryDTO) {
@@ -394,7 +394,7 @@ public class UserController {
         return ResponseEntity.ok(updated);
     }
 
-    @PutMapping("/logcategory/{id}/status")
+    @PutMapping("/logCategory/{id}/status")
     public ResponseEntity<LogCategory> updateLogCategoryStatus(
             @PathVariable int id,
             @RequestParam("action") String action) {
