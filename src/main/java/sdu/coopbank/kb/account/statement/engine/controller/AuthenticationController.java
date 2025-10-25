@@ -9,7 +9,7 @@ import sdu.coopbank.kb.account.statement.engine.dto.AuthenticationResponse;
 import sdu.coopbank.kb.account.statement.engine.service.AuthenticationService;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api2")
 //@RequestMapping("/api/accountstatementengine/v1/auth")
 @RequiredArgsConstructor
 @Slf4j

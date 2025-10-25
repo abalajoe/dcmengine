@@ -134,7 +134,7 @@ public class UserController {
                                         @RequestParam("length") int length,
                                         @RequestParam(value = "searchVal", required = false) String searchVal,
                                         @RequestParam(defaultValue = "id,desc") String[] sort) {
-        log.info("findAllConfigs => start={} length={} sort={} searchVal={}",
+        log.info("findAllDepartments => start={} length={} sort={} searchVal={}",
                 start, length, Arrays.toString(sort), searchVal);
 
         // ✅ Defensive check — avoid IndexOutOfBounds if client sends malformed sort param
@@ -149,6 +149,29 @@ public class UserController {
                     searchVal.trim(), pageable);
         } else {
             return userService.findAllDepartments(pageable);
+        }
+    }
+
+    @GetMapping("/findAllBranches")
+    public Page<Branch> findAllBranches(@RequestParam("start") int start,
+                                               @RequestParam("length") int length,
+                                               @RequestParam(value = "searchVal", required = false) String searchVal,
+                                               @RequestParam(defaultValue = "id,desc") String[] sort) {
+        log.info("findAllBranches => start={} length={} sort={} searchVal={}",
+                start, length, Arrays.toString(sort), searchVal);
+
+        // ✅ Defensive check — avoid IndexOutOfBounds if client sends malformed sort param
+        String sortField = sort.length > 0 ? sort[0] : "id";
+        String sortDir = sort.length > 1 ? sort[1] : "desc";
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDir.toUpperCase());
+//        Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sort[0]));
+        Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sortField));
+        if (searchVal != null && !searchVal.trim().isEmpty()) {
+            return userService.findAllBranches(
+                    searchVal.trim(), pageable);
+        } else {
+            return userService.findAllBranches(pageable);
         }
     }
 
@@ -174,6 +197,52 @@ public class UserController {
             return userService.findAllRole(pageable);
         }
     }
+
+    @GetMapping("/findAllManagers")
+    public Page<Manager> findAllManager(@RequestParam("start") int start,
+                                    @RequestParam("length") int length,
+                                    @RequestParam(value = "searchVal", required = false) String searchVal,
+                                    @RequestParam(defaultValue = "id,desc") String[] sort) {
+        log.info("findAllRoles => start={} length={} sort={} searchVal={}",
+                start, length, Arrays.toString(sort), searchVal);
+
+        // ✅ Defensive check — avoid IndexOutOfBounds if client sends malformed sort param
+        String sortField = sort.length > 0 ? sort[0] : "id";
+        String sortDir = sort.length > 1 ? sort[1] : "desc";
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDir.toUpperCase());
+//        Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sort[0]));
+        Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sortField));
+        if (searchVal != null && !searchVal.trim().isEmpty()) {
+            return userService.findAllManagers(
+                    searchVal.trim(), pageable);
+        } else {
+            return userService.findAllManagers(pageable);
+        }
+    }
+
+    @GetMapping("/findAllLogCategory")
+    public Page<LogCategory> findAllLogCategory(@RequestParam("start") int start,
+                                        @RequestParam("length") int length,
+                                        @RequestParam(value = "searchVal", required = false) String searchVal,
+                                        @RequestParam(defaultValue = "id,desc") String[] sort) {
+        log.info("findAllLogCategory => start={} length={} sort={} searchVal={}",
+                start, length, Arrays.toString(sort), searchVal);
+
+        // ✅ Defensive check — avoid IndexOutOfBounds if client sends malformed sort param
+        String sortField = sort.length > 0 ? sort[0] : "id";
+        String sortDir = sort.length > 1 ? sort[1] : "desc";
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDir.toUpperCase());
+//        Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sort[0]));
+        Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sortField));
+        if (searchVal != null && !searchVal.trim().isEmpty()) {
+            return userService.findAllLogCategory(
+                    searchVal.trim(), pageable);
+        } else {
+            return userService.findAllLogCategory(pageable);
+        }
+    }
     @PostMapping("/create")
     public ResponseEntity<User> create(@RequestBody UserCreateRequest userCreateRequest) {
         User user = userService.create(userCreateRequest);
@@ -197,6 +266,15 @@ public class UserController {
         return ResponseEntity.ok(department);
     }
 
+    @PostMapping("/branch")
+    public ResponseEntity<Branch> create(@RequestBody BranchDTO branchDTO) {
+        log.info("branchDTO {}", branchDTO);
+
+        Branch branch = userService.createBranch(branchDTO);
+        log.info("branch {}", branch);
+        return ResponseEntity.ok(branch);
+    }
+
     @PutMapping("/department/{id}")
     public ResponseEntity<Department> updateDepartment(
             @PathVariable int id,
@@ -215,6 +293,25 @@ public class UserController {
         Department updated = userService.updateDepartmentStatus(id, action);
         return ResponseEntity.ok(updated);
     }
+
+    @PutMapping("/branch/{id}")
+    public ResponseEntity<Branch> updateBranch(
+            @PathVariable int id,
+            @RequestBody BranchDTO branchDTO) {
+
+        Branch updated = userService.updateBranch(id, branchDTO);
+        log.info("branch {}", updated);
+        return ResponseEntity.ok(updated);
+    }
+
+    @PutMapping("/branch/{id}/status")
+    public ResponseEntity<Branch> updateBranchStatus(
+            @PathVariable int id,
+            @RequestParam("action") String action) {
+
+        Branch updated = userService.updateBranchStatus(id, action);
+        return ResponseEntity.ok(updated);
+    }
     @GetMapping("/findAllRoles")
     public ResponseEntity<List<Roles>> findAllRoles() {
         List<Roles> roles = userService.findAllRole();
@@ -229,6 +326,24 @@ public class UserController {
         Roles role = userService.createRole(roleDTO);
         log.info("department {}", role);
         return ResponseEntity.ok(role);
+    }
+
+    @PostMapping("/manager")
+    public ResponseEntity<Manager> create(@RequestBody ManagerDTO managerDTO) {
+        log.info("managerDTO {}", managerDTO);
+
+        Manager manager = userService.createManager(managerDTO);
+        log.info("manager {}", manager);
+        return ResponseEntity.ok(manager);
+    }
+
+    @PostMapping("/logcategory")
+    public ResponseEntity<LogCategory> create(@RequestBody LogCategoryDTO logCategoryDTO) {
+        log.info("logCategoryDTO {}", logCategoryDTO);
+
+        LogCategory logCategory = userService.createLogCategory(logCategoryDTO);
+        log.info("manager {}", logCategory);
+        return ResponseEntity.ok(logCategory);
     }
 
     @PutMapping("/role/{id}")
@@ -250,6 +365,43 @@ public class UserController {
         return ResponseEntity.ok(updated);
     }
 
+    @PutMapping("/manager/{id}")
+    public ResponseEntity<Manager> updateManager(
+            @PathVariable int id,
+            @RequestBody ManagerDTO managerDTO) {
+
+        Manager updated = userService.updateManager(id, managerDTO);
+        log.info("updated {}", updated);
+        return ResponseEntity.ok(updated);
+    }
+
+    @PutMapping("/manager/{id}/status")
+    public ResponseEntity<Manager> updateManagerStatus(
+            @PathVariable int id,
+            @RequestParam("action") String action) {
+
+        Manager updated = userService.updateManagerStatus(id, action);
+        return ResponseEntity.ok(updated);
+    }
+
+    @PutMapping("/logcategory/{id}")
+    public ResponseEntity<LogCategory> updateLogCategory(
+            @PathVariable int id,
+            @RequestBody LogCategoryDTO logCategoryDTO) {
+
+        LogCategory updated = userService.updateLogCategory(id, logCategoryDTO);
+        log.info("updated {}", updated);
+        return ResponseEntity.ok(updated);
+    }
+
+    @PutMapping("/logcategory/{id}/status")
+    public ResponseEntity<LogCategory> updateLogCategoryStatus(
+            @PathVariable int id,
+            @RequestParam("action") String action) {
+
+        LogCategory updated = userService.updateLogCategoryStatus(id, action);
+        return ResponseEntity.ok(updated);
+    }
     @PostMapping("/edit")
     public ResponseEntity<User> edit(@RequestBody UserCreateRequest userCreateRequest) {
         User user = userService.edit(userCreateRequest);

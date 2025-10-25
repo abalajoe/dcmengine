@@ -44,7 +44,10 @@ public class UserServiceImpl implements UserService {
     private final ChargeWaiverRepository chargeWaiverRepository;
     private final ConfigsRepository configsRepository;
     private final DepartmentsRepository departmentsRepository;
+    private final BranchesRepository branchesRepository;
     private final RolesRepository rolesRepository;
+    private final ManagerRepository managerRepository;
+    private final LogCategoryRepository logCategoryRepository;
     private final StatusRepository statusRepository;
     private final PasswordEncoder passwordEncoder;
     @Autowired
@@ -98,6 +101,35 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Branch createBranch(BranchDTO branchDTO) {
+        try {
+            log.info("branchDTO >> {}", branchDTO);
+            Optional<Branch> branch = branchesRepository.findByNameIgnoreCase(branchDTO.getName());
+            log.info("branchDTO2 >> {}", branch);
+            if(branch.isPresent()) throw new EntityExistsException("The resource exists");
+            log.info("branchDTO3 >> {}", branch);
+
+            Optional<Status> status = statusRepository.findById(2);
+            if (status.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+            Branch branch1 = Branch.builder()
+                    .name(branchDTO.getName())
+                    .description(branchDTO.getDescription())
+                    .dateCreated(LocalDateTime.now())
+                    .dateUpdated(LocalDateTime.now())
+                    .createdBy("admin")
+                    .updatedBy("admin")
+                    .status(status.get())
+                    .build();
+            return branchesRepository.save(branch1);
+        } catch (Exception e){
+            e.printStackTrace();
+            log.error("error - {}", e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
     public Roles createRole(RoleDTO roleDTO) {
         try {
             log.info("roleDTO >> {}", roleDTO);
@@ -129,6 +161,65 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Manager createManager(ManagerDTO managerDTO) {
+        try {
+            log.info("managerDTO >> {}", managerDTO);
+            Optional<Manager> manager = managerRepository.findByNameIgnoreCase(managerDTO.getName());
+            log.info("managerDTO >> {}", manager);
+            if(manager.isPresent()) throw new EntityExistsException("The resource exists");
+            Optional<Department> department = departmentsRepository.findById(managerDTO.getDepartment());
+            if(department.isEmpty()) throw new EntityExistsException("The resource does not exists");
+
+            Optional<Status> status = statusRepository.findById(2);
+            if (status.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+            Manager manager1 = Manager.builder()
+                    .name(managerDTO.getName())
+                    .description(managerDTO.getDescription())
+                    .department(department.get())
+                    .dateCreated(LocalDateTime.now())
+                    .dateUpdated(LocalDateTime.now())
+                    .createdBy("admin")
+                    .updatedBy("admin")
+                    .status(status.get())
+                    .build();
+            return  managerRepository.save(manager1);
+        } catch (Exception e){
+            e.printStackTrace();
+            log.error("error - {}", e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public LogCategory createLogCategory(LogCategoryDTO logCategoryDTO) {
+        try {
+            log.info("logCategoryDTO >> {}", logCategoryDTO);
+            Optional<LogCategory> logCategory = logCategoryRepository.findByNameIgnoreCase(logCategoryDTO.getName());
+            log.info("logCategory >> {}", logCategory);
+            if(logCategory.isPresent()) throw new EntityExistsException("The resource exists");
+
+            Optional<Status> status = statusRepository.findById(2);
+            if (status.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+            LogCategory logCategory1 = LogCategory.builder()
+                    .name(logCategoryDTO.getName())
+                    .description(logCategoryDTO.getDescription())
+                    .dateCreated(LocalDateTime.now())
+                    .dateUpdated(LocalDateTime.now())
+                    .createdBy("admin")
+                    .updatedBy("admin")
+                    .status(status.get())
+                    .build();
+            return  logCategoryRepository.save(logCategory1);
+        } catch (Exception e){
+            e.printStackTrace();
+            log.error("error - {}", e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
     public Department updateDepartment(int id, DepartmentDTO departmentDTO) {
         Optional<Department> department = departmentsRepository.findById(id);
         if (department.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
@@ -142,6 +233,22 @@ public class UserServiceImpl implements UserService {
         department1.setStatus(status1.get());
         department1.setDateUpdated(LocalDateTime.now());
         return departmentsRepository.save(department1);
+    }
+
+    @Override
+    public Branch updateBranch(int id, BranchDTO branchDTO) {
+        Optional<Branch> branch = branchesRepository.findById(id);
+        if (branch.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Status> status1 = statusRepository.findById(2);
+        if (status1.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Branch branch1 = branch.get();
+        branch1.setName(branchDTO.getName());
+        branch1.setDescription(branchDTO.getDescription());
+        branch1.setStatus(status1.get());
+        branch1.setDateUpdated(LocalDateTime.now());
+        return branchesRepository.save(branch1);
     }
 
     @Override
@@ -170,7 +277,33 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Branch updateBranchStatus(int id, String action) {
+        Optional<Branch> branch = branchesRepository.findById(id);
+        if (branch.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Status> status1 = statusRepository.findById(1);
+        if (status1.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Status> status2 = statusRepository.findById(3);
+        if (status2.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Branch branch1 = branch.get();
+        if ("approve".equalsIgnoreCase(action)) {
+            branch1.setStatus(status1.get()); // or StatusEnum.APPROVED
+        } else if ("reject".equalsIgnoreCase(action)) {
+            branch1.setStatus(status2.get());; // or StatusEnum.REJECTED
+        } else {
+            throw new IllegalArgumentException("Invalid action: must be approve or reject");
+        }
+
+        branch1.setUpdatedBy(SecurityContextHolder.getContext().getAuthentication().getName());
+        branch1.setDateUpdated(LocalDateTime.now());
+        return branchesRepository.save(branch1);
+    }
+
+    @Override
     public Roles updateRole(int id, RoleDTO roleDTO) {
+        log.info("updateRole {} {}", id, roleDTO);
         Optional<Roles> role = rolesRepository.findById(id);
         if (role.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
 
@@ -178,7 +311,7 @@ public class UserServiceImpl implements UserService {
         if (status1.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
 
         Optional<Department> department = departmentsRepository.findById(roleDTO.getDepartment());
-        if(department.isEmpty()) throw new EntityExistsException("The resource exists");
+        if(department.isEmpty()) throw new EntityExistsException("The resource does not exists");
 
         Roles role1 = role.get();
         role1.setName(roleDTO.getName());
@@ -188,6 +321,45 @@ public class UserServiceImpl implements UserService {
         role1.setDateUpdated(LocalDateTime.now());
         return rolesRepository.save(role1);
     }
+
+    @Override
+    public Manager updateManager(int id, ManagerDTO managerDTO) {
+        log.info("updateRole {} {}", id, managerDTO);
+        Optional<Manager> manager = managerRepository.findById(id);
+        if (manager.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Status> status1 = statusRepository.findById(2);
+        if (status1.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Department> department = departmentsRepository.findById(managerDTO.getDepartment());
+        if(department.isEmpty()) throw new EntityExistsException("The resource does not exists");
+
+        Manager manager1 = manager.get();
+        manager1.setName(managerDTO.getName());
+        manager1.setDescription(managerDTO.getDescription());
+        manager1.setDepartment(department.get());
+        manager1.setStatus(status1.get());
+        manager1.setDateUpdated(LocalDateTime.now());
+        return managerRepository.save(manager1);
+    }
+
+    @Override
+    public LogCategory updateLogCategory(int id, LogCategoryDTO logCategoryDTO) {
+        log.info("updateLogCategory {} {}", id, logCategoryDTO);
+        Optional<LogCategory> logCategory = logCategoryRepository.findById(id);
+        if (logCategory.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Status> status1 = statusRepository.findById(2);
+        if (status1.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        LogCategory logCategory1 = logCategory.get();
+        logCategory1.setName(logCategoryDTO.getName());
+        logCategory1.setDescription(logCategoryDTO.getDescription());
+        logCategory1.setStatus(status1.get());
+        logCategory1.setDateUpdated(LocalDateTime.now());
+        return logCategoryRepository.save(logCategory1);
+    }
+
     @Override
     public Roles updateRoleStatus(int id, String action) {
         Optional<Roles> role = rolesRepository.findById(id);
@@ -211,6 +383,56 @@ public class UserServiceImpl implements UserService {
         role1.setUpdatedBy(SecurityContextHolder.getContext().getAuthentication().getName());
         role1.setDateUpdated(LocalDateTime.now());
         return rolesRepository.save(role1);
+    }
+
+    @Override
+    public Manager updateManagerStatus(int id, String action) {
+        Optional<Manager> manager = managerRepository.findById(id);
+        if (manager.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Status> status1 = statusRepository.findById(1);
+        if (status1.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Status> status2 = statusRepository.findById(3);
+        if (status2.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Manager manager1 = manager.get();
+        if ("approve".equalsIgnoreCase(action)) {
+            manager1.setStatus(status1.get()); // or StatusEnum.APPROVED
+        } else if ("reject".equalsIgnoreCase(action)) {
+            manager1.setStatus(status2.get());; // or StatusEnum.REJECTED
+        } else {
+            throw new IllegalArgumentException("Invalid action: must be approve or reject");
+        }
+
+        manager1.setUpdatedBy(SecurityContextHolder.getContext().getAuthentication().getName());
+        manager1.setDateUpdated(LocalDateTime.now());
+        return managerRepository.save(manager1);
+    }
+
+    @Override
+    public LogCategory updateLogCategoryStatus(int id, String action) {
+        Optional<LogCategory> logCategory = logCategoryRepository.findById(id);
+        if (logCategory.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Status> status1 = statusRepository.findById(1);
+        if (status1.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Optional<Status> status2 = statusRepository.findById(3);
+        if (status2.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        LogCategory logCategory1 = logCategory.get();
+        if ("approve".equalsIgnoreCase(action)) {
+            logCategory1.setStatus(status1.get()); // or StatusEnum.APPROVED
+        } else if ("reject".equalsIgnoreCase(action)) {
+            logCategory1.setStatus(status2.get());; // or StatusEnum.REJECTED
+        } else {
+            throw new IllegalArgumentException("Invalid action: must be approve or reject");
+        }
+
+        logCategory1.setUpdatedBy(SecurityContextHolder.getContext().getAuthentication().getName());
+        logCategory1.setDateUpdated(LocalDateTime.now());
+        return logCategoryRepository.save(logCategory1);
     }
 
     @Override
@@ -294,6 +516,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Page<Branch> findAllBranches(Pageable pageable) {
+        return branchesRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<Branch> findAllBranches(String search, Pageable pageable) {
+        return branchesRepository.findAllByNameContainingIgnoreCase(search, pageable);
+    }
+
+    @Override
+    public Page<Manager> findAllManagers(Pageable pageable) {
+        return managerRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<Manager> findAllManagers(String search, Pageable pageable) {
+        return managerRepository.findAllByNameContainingIgnoreCase(search, pageable);
+    }
+
+    @Override
     public Page<Roles> findAllRole(Pageable pageable) {
         return rolesRepository.findAll(pageable);
     }
@@ -301,6 +543,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public Page<Roles> findAllRole(String search, Pageable pageable) {
         return rolesRepository.findAllByNameContainingIgnoreCase(search, pageable);
+    }
+
+    @Override
+    public Page<LogCategory> findAllLogCategory(Pageable pageable) {
+        return logCategoryRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<LogCategory> findAllLogCategory(String search, Pageable pageable) {
+        return logCategoryRepository.findAllByNameContainingIgnoreCase(search, pageable);
     }
 
     @Override
