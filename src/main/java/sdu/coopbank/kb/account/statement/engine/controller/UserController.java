@@ -257,6 +257,13 @@ public class UserController {
         return ResponseEntity.ok(department);
     }
 
+    @GetMapping("/findAllBranches")
+    public ResponseEntity<List<Branch>> findAllBranches() {
+        List<Branch> branches = userService.findAllBranches();
+        log.info("branches {}", branches);
+        return ResponseEntity.ok(branches);
+    }
+
     @PostMapping("/department")
     public ResponseEntity<Department> create(@RequestBody DepartmentDTO departmentDTO) {
         log.info("departmentDTO {}", departmentDTO);

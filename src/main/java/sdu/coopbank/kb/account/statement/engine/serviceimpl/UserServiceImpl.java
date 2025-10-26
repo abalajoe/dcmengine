@@ -167,8 +167,8 @@ public class UserServiceImpl implements UserService {
             Optional<Manager> manager = managerRepository.findByNameIgnoreCase(managerDTO.getName());
             log.info("managerDTO >> {}", manager);
             if(manager.isPresent()) throw new EntityExistsException("The resource exists");
-            Optional<Department> department = departmentsRepository.findById(managerDTO.getDepartment());
-            if(department.isEmpty()) throw new EntityExistsException("The resource does not exists");
+            Optional<Branch> branch = branchesRepository.findById(managerDTO.getDepartment());
+            if(branch.isEmpty()) throw new EntityExistsException("The resource does not exists");
 
             Optional<Status> status = statusRepository.findById(2);
             if (status.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
@@ -176,7 +176,7 @@ public class UserServiceImpl implements UserService {
             Manager manager1 = Manager.builder()
                     .name(managerDTO.getName())
                     .description(managerDTO.getDescription())
-                    .department(department.get())
+                    .branch(branch.get())
                     .dateCreated(LocalDateTime.now())
                     .dateUpdated(LocalDateTime.now())
                     .createdBy("admin")
@@ -331,13 +331,13 @@ public class UserServiceImpl implements UserService {
         Optional<Status> status1 = statusRepository.findById(2);
         if (status1.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
 
-        Optional<Department> department = departmentsRepository.findById(managerDTO.getDepartment());
-        if(department.isEmpty()) throw new EntityExistsException("The resource does not exists");
+        Optional<Branch> branch = branchesRepository.findById(managerDTO.getDepartment());
+        if(branch.isEmpty()) throw new EntityExistsException("The resource does not exists");
 
         Manager manager1 = manager.get();
         manager1.setName(managerDTO.getName());
         manager1.setDescription(managerDTO.getDescription());
-        manager1.setDepartment(department.get());
+        manager1.setBranch(branch.get());
         manager1.setStatus(status1.get());
         manager1.setDateUpdated(LocalDateTime.now());
         return managerRepository.save(manager1);

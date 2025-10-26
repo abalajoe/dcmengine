@@ -34,8 +34,8 @@ public class Manager {
     private String description;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "DEPARTMENT", nullable = false)
-    private Department department;
+    @JoinColumn(name = "BRANCH", nullable = false)
+    private Branch branch;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "STATUS", nullable = false)

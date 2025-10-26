@@ -43,6 +43,7 @@ public interface UserService {
     Page<Department> findAllDepartments(Pageable pageable);
     Page<Department> findAllDepartments(String search, Pageable pageable);
     List<Department> findAllDepartments();
+    List<Branch> findAllBranches();
 
     Page<Branch> findAllBranches(Pageable pageable);
     Page<Branch> findAllBranches(String search, Pageable pageable);
