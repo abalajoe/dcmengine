@@ -11,12 +11,15 @@ public interface UserService {
     List<User> findAll();
     User create(UserCreateRequest userCreateRequest);
     Department createDepartment(DepartmentDTO departmentDTO);
+    Supplier createSupplier(SupplierDTO supplierDTO);
     Branch createBranch(BranchDTO branchDTO);
     Roles createRole(RoleDTO roleDTO);
 
     Manager createManager(ManagerDTO managerDTO);
     LogCategory createLogCategory(LogCategoryDTO logCategoryDTO);
     Department updateDepartment(int id, DepartmentDTO departmentDTO);
+    Supplier updateSupplier(int id, SupplierDTO supplierDTO);
+    Supplier deleteSupplier(int id);
     Branch updateBranch(int id, BranchDTO branchDTO);
     Roles updateRole(int id, RoleDTO roleDTO);
     Manager updateManager(int id, ManagerDTO managerDTO);
@@ -43,6 +46,7 @@ public interface UserService {
     Page<Department> findAllDepartments(Pageable pageable);
     Page<Department> findAllDepartments(String search, Pageable pageable);
     List<Department> findAllDepartments();
+    List<Supplier> findSuppliersReport();
     List<Branch> findAllBranches();
 
     Page<Branch> findAllBranches(Pageable pageable);
@@ -50,6 +54,9 @@ public interface UserService {
 
     Page<Manager> findAllManagers(Pageable pageable);
     Page<Manager> findAllManagers(String search, Pageable pageable);
+
+    Page<Supplier> findAllSuppliers(Pageable pageable);
+    Page<Supplier> findAllSuppliers(String search, Pageable pageable);
     Page<Roles> findAllRole(Pageable pageable);
     Page<Roles> findAllRole(String search, Pageable pageable);
 

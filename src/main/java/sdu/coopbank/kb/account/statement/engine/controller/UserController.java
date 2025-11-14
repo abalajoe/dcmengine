@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api2")
 //@RequestMapping("/api/accountstatementengine/v1/user")
-@RequestMapping("/api/accountstatementengine/v1/user")
 @RequiredArgsConstructor
 @Slf4j
 public class UserController {
@@ -221,6 +221,29 @@ public class UserController {
         }
     }
 
+    @GetMapping("/findAllSuppliers")
+    public Page<Supplier> findAllSuppliers(@RequestParam("start") int start,
+                                        @RequestParam("length") int length,
+                                        @RequestParam(value = "searchVal", required = false) String searchVal,
+                                        @RequestParam(defaultValue = "id,desc") String[] sort) {
+        log.info("findAllRoles => start={} length={} sort={} searchVal={}",
+                start, length, Arrays.toString(sort), searchVal);
+
+        // ✅ Defensive check — avoid IndexOutOfBounds if client sends malformed sort param
+        String sortField = sort.length > 0 ? sort[0] : "id";
+        String sortDir = sort.length > 1 ? sort[1] : "desc";
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDir.toUpperCase());
+//        Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sort[0]));
+        Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sortField));
+        if (searchVal != null && !searchVal.trim().isEmpty()) {
+            return userService.findAllSuppliers(
+                    searchVal.trim(), pageable);
+        } else {
+            return userService.findAllSuppliers(pageable);
+        }
+    }
+
     @GetMapping("/findAllLogCategory")
     public Page<LogCategory> findAllLogCategory(@RequestParam("start") int start,
                                         @RequestParam("length") int length,
@@ -257,11 +280,11 @@ public class UserController {
         return ResponseEntity.ok(department);
     }
 
-    @GetMapping("/findAllBranches")
-    public ResponseEntity<List<Branch>> findAllBranches() {
-        List<Branch> branches = userService.findAllBranches();
-        log.info("branches {}", branches);
-        return ResponseEntity.ok(branches);
+    @GetMapping("/supplierReport")
+    public ResponseEntity<List<Supplier>> findSuppliersReport() {
+        List<Supplier> suppliers = userService.findSuppliersReport();
+        log.info("suppliers {}", suppliers);
+        return ResponseEntity.ok(suppliers);
     }
 
     @PostMapping("/department")
@@ -271,6 +294,15 @@ public class UserController {
         Department department = userService.createDepartment(departmentDTO);
         log.info("department {}", department);
         return ResponseEntity.ok(department);
+    }
+
+    @PostMapping("/supplier")
+    public ResponseEntity<Supplier> create(@RequestBody SupplierDTO supplierDTO) {
+        log.info("supplierDTO {}", supplierDTO);
+
+        Supplier supplier = userService.createSupplier(supplierDTO);
+        log.info("department {}", supplier);
+        return ResponseEntity.ok(supplier);
     }
 
     @PostMapping("/branch")
@@ -289,6 +321,25 @@ public class UserController {
 
         Department updated = userService.updateDepartment(id, departmentDTO);
         log.info("department {}", updated);
+        return ResponseEntity.ok(updated);
+    }
+
+    @PutMapping("/supplier/{id}")
+    public ResponseEntity<Supplier> updateSupplier(
+            @PathVariable int id,
+            @RequestBody SupplierDTO supplierDTO) {
+
+        Supplier updated = userService.updateSupplier(id, supplierDTO);
+        log.info("supplier {}", updated);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/supplier/{id}")
+    public ResponseEntity<Supplier> deleteSupplier(
+            @PathVariable int id) {
+
+        Supplier updated = userService.deleteSupplier(id);
+        log.info("supplier {}", updated);
         return ResponseEntity.ok(updated);
     }
 

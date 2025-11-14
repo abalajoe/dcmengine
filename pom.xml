@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>sdu.coopbank.kb.account.statement.engine</groupId>
-	<artifactId>accountstatementengine</artifactId>
+	<artifactId>dcmengine</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>accountstatementengine</name>
 	<description>Account Statement Engine</description>
@@ -44,8 +44,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.oracle.database.jdbc</groupId>
-			<artifactId>ojdbc11</artifactId>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>

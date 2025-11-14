@@ -44,6 +44,7 @@ public class UserServiceImpl implements UserService {
     private final ChargeWaiverRepository chargeWaiverRepository;
     private final ConfigsRepository configsRepository;
     private final DepartmentsRepository departmentsRepository;
+    private final SupplierRepository supplierRepository;
     private final BranchesRepository branchesRepository;
     private final RolesRepository rolesRepository;
     private final ManagerRepository managerRepository;
@@ -98,6 +99,31 @@ public class UserServiceImpl implements UserService {
            log.error("error - {}", e.getMessage());
            return null;
        }
+    }
+
+    @Override
+    public Supplier createSupplier(SupplierDTO supplierDTO) {
+        try {
+            log.info("supplierDTO >> {}", supplierDTO);
+            Optional<Supplier> supplier = supplierRepository.findBySkuIgnoreCase(supplierDTO.getSku());
+            log.info("supplierDTO2 >> {}", supplier);
+            if(supplier.isPresent()) throw new EntityExistsException("The resource exists");
+            log.info("supplierDTO3 >> {}", supplier);
+
+            Supplier supplier1 = Supplier.builder()
+                    .sku(supplierDTO.getSku())
+                    .name(supplierDTO.getName())
+                    .quantity(supplierDTO.getQuantity())
+                    .createdby(supplierDTO.getCreatedby())
+                    .datecreated(LocalDateTime.now())
+                    .status(1)
+                    .build();
+            return supplierRepository.save(supplier1);
+        } catch (Exception e){
+            e.printStackTrace();
+            log.error("error - {}", e.getMessage());
+            return null;
+        }
     }
 
     @Override
@@ -233,6 +259,28 @@ public class UserServiceImpl implements UserService {
         department1.setStatus(status1.get());
         department1.setDateUpdated(LocalDateTime.now());
         return departmentsRepository.save(department1);
+    }
+
+    @Override
+    public Supplier updateSupplier(int id, SupplierDTO supplierDTO) {
+        Optional<Supplier> supplier = supplierRepository.findById(id);
+        if (supplier.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Supplier supplier1 = supplier.get();
+        supplier1.setSku(supplierDTO.getSku());
+        supplier1.setName(supplierDTO.getName());
+        supplier1.setQuantity(supplierDTO.getQuantity());
+        return supplierRepository.save(supplier1);
+    }
+
+    @Override
+    public Supplier deleteSupplier(int id) {
+        Optional<Supplier> supplier = supplierRepository.findById(id);
+        if (supplier.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+
+        Supplier supplier1 = supplier.get();
+        supplier1.setStatus(0);
+        return supplierRepository.save(supplier1);
     }
 
     @Override
@@ -511,8 +559,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Page<Supplier> findAllSuppliers(Pageable pageable) {
+
+        return supplierRepository.findAllByStatus(1, pageable);
+    }
+
+    @Override
+    public Page<Supplier> findAllSuppliers(String search, Pageable pageable) {
+        return supplierRepository.findAllByStatusAndSkuContainingIgnoreCase(1, search, pageable);
+    }
+
+    @Override
     public List<Department> findAllDepartments() {
         return departmentsRepository.findAll();
+    }
+
+    @Override
+    public List<Supplier> findSuppliersReport() {
+        return supplierRepository.findAllByStatus(1);
+    }
+
+    @Override
+    public List<Branch> findAllBranches() {
+        return null;
     }
 
     @Override
