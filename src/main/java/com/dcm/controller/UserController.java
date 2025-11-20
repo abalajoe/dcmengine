@@ -1,8 +1,11 @@
 package com.dcm.controller;
 
 import com.dcm.dto.SupplierDTO;
+import com.dcm.dto.UserDTO;
 import com.dcm.entity.Supplier;
+import com.dcm.entity.User;
 import com.dcm.service.SupplyService;
+import com.dcm.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,6 +24,7 @@ import java.util.List;
 @Slf4j
 public class UserController {
     private final SupplyService supplyService;
+    private final UserService userService;
 
     @GetMapping("/findAllUsers")
     public Page<Supplier> findAllSuppliers(@RequestParam("start") int start,
@@ -61,23 +65,13 @@ public class UserController {
         return ResponseEntity.ok(supplier);
     }
 
-    @PutMapping("/supplier/{id}")
-    public ResponseEntity<Supplier> updateSupplier(
-            @PathVariable int id,
-            @RequestBody SupplierDTO supplierDTO) {
+    @PostMapping("/create")
+    public ResponseEntity<User> create(@RequestBody UserDTO userDTO) {
+        log.info("userDTO {}", userDTO);
 
-        Supplier updated = supplyService.updateSupplier(id, supplierDTO);
-        log.info("supplier {}", updated);
-        return ResponseEntity.ok(updated);
-    }
-
-    @DeleteMapping("/supplier/{id}")
-    public ResponseEntity<Supplier> deleteSupplier(
-            @PathVariable int id) {
-
-        Supplier updated = supplyService.deleteSupplier(id);
-        log.info("supplier {}", updated);
-        return ResponseEntity.ok(updated);
+        User user = userService.create(userDTO);
+        log.info("user {}", user);
+        return ResponseEntity.ok(user);
     }
 }
 
