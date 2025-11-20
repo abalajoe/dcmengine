@@ -35,6 +35,7 @@ public class SupplyServiceImpl implements SupplyService {
                     .sku(supplierDTO.getSku())
                     .name(supplierDTO.getName())
                     .quantity(supplierDTO.getQuantity())
+                    .price(supplierDTO.getPrice())
                     .createdby(supplierDTO.getCreatedby())
                     .datecreated(LocalDateTime.now())
                     .status(1)
@@ -56,6 +57,7 @@ public class SupplyServiceImpl implements SupplyService {
         supplier1.setSku(supplierDTO.getSku());
         supplier1.setName(supplierDTO.getName());
         supplier1.setQuantity(supplierDTO.getQuantity());
+        supplier1.setPrice(supplierDTO.getPrice());
         return supplierRepository.save(supplier1);
     }
 

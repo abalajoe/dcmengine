@@ -24,6 +24,7 @@ public class Supplier {
     private String sku;
     private String name;
     private int quantity;
+    private double price;
     private int status;
     private String createdby;
     private LocalDateTime datecreated;

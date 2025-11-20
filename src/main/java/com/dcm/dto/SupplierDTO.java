@@ -14,4 +14,5 @@ public class SupplierDTO {
     private String name;
     private String createdby;
     private int quantity;
+    private double price;
 }
