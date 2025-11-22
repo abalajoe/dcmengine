@@ -1,6 +1,6 @@
 spring:
   application:
-    name: kbaccountstatementengine
+    name: dcmengine
 
   profiles:
     active: sit
