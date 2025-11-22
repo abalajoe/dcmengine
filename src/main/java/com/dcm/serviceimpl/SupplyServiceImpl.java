@@ -2,7 +2,9 @@ package com.dcm.serviceimpl;
 
 import com.dcm.dto.SupplierDTO;
 import com.dcm.entity.Supplier;
+import com.dcm.entity.User;
 import com.dcm.repository.SupplierRepository;
+import com.dcm.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,6 +23,7 @@ import java.util.*;
 public class SupplyServiceImpl implements SupplyService {
 
     private final SupplierRepository supplierRepository;
+    private final UserRepository userRepository;
 
     @Override
     public Supplier createSupplier(SupplierDTO supplierDTO) {
@@ -30,16 +33,20 @@ public class SupplyServiceImpl implements SupplyService {
             log.info("supplierDTO2 >> {}", supplier);
             if(supplier.isPresent()) throw new EntityExistsException("The resource exists");
             log.info("supplierDTO3 >> {}", supplier);
-
+            Optional<User> user = userRepository.findById(supplierDTO.getUserid());
+            if(user.isEmpty()) throw new EntityExistsException("The resource does not exists");
+            log.info("user >> {}", user.get());
             Supplier supplier1 = Supplier.builder()
                     .sku(supplierDTO.getSku())
                     .name(supplierDTO.getName())
                     .quantity(supplierDTO.getQuantity())
+                    .userid(user.get())
                     .price(supplierDTO.getPrice())
                     .createdby(supplierDTO.getCreatedby())
                     .datecreated(LocalDateTime.now())
                     .status(1)
                     .build();
+            log.info("supplier1 >> {}", supplier1);
             return supplierRepository.save(supplier1);
         } catch (Exception e){
             e.printStackTrace();
@@ -72,13 +79,15 @@ public class SupplyServiceImpl implements SupplyService {
     }
 
     @Override
-    public Page<Supplier> findAllSuppliers(Pageable pageable) {
-
-        return supplierRepository.findAllByStatus(1, pageable);
+    public Page<Supplier> findAllSuppliers(int id, Pageable pageable) {
+        if (id == 0){
+            return supplierRepository.findAllByStatus(1, pageable);
+        }
+        return supplierRepository.findAllByUserid_id(id, pageable);
     }
 
     @Override
-    public Page<Supplier> findAllSuppliers(String search, Pageable pageable) {
+    public Page<Supplier> findAllSuppliers(int id, String search, Pageable pageable) {
         return supplierRepository.findAllByStatusAndSkuContainingIgnoreCase(1, search, pageable);
     }
 

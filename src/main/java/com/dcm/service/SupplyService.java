@@ -12,6 +12,6 @@ public interface SupplyService {
     Supplier updateSupplier(int id, SupplierDTO supplierDTO);
     Supplier deleteSupplier(int id);
     List<Supplier> findSuppliersReport();
-    Page<Supplier> findAllSuppliers(Pageable pageable);
-    Page<Supplier> findAllSuppliers(String search, Pageable pageable);
+    Page<Supplier> findAllSuppliers(int id, Pageable pageable);
+    Page<Supplier> findAllSuppliers(int id, String search, Pageable pageable);
 }

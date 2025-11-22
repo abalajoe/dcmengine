@@ -23,25 +23,26 @@ public class SupplierController {
     private final SupplyService supplyService;
 
     @GetMapping("/findAllSuppliers")
-    public Page<Supplier> findAllSuppliers(@RequestParam("start") int start,
+    public Page<Supplier> findAllSuppliers(@RequestParam("id") int id,
+                                           @RequestParam("start") int start,
                                            @RequestParam("length") int length,
                                            @RequestParam(value = "searchVal", required = false) String searchVal,
                                            @RequestParam(defaultValue = "id,desc") String[] sort) {
-        log.info("findAllRoles => start={} length={} sort={} searchVal={}",
-                start, length, Arrays.toString(sort), searchVal);
+        log.info("findAllSuppliers => id={} start={} length={} sort={} searchVal={}",
+                id, start, length, Arrays.toString(sort), searchVal);
 
         // ✅ Defensive check — avoid IndexOutOfBounds if client sends malformed sort param
         String sortField = sort.length > 0 ? sort[0] : "id";
         String sortDir = sort.length > 1 ? sort[1] : "desc";
 
         Sort.Direction direction = Sort.Direction.fromString(sortDir.toUpperCase());
-//        Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sort[0]));
+        //  Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sort[0]));
         Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sortField));
         if (searchVal != null && !searchVal.trim().isEmpty()) {
-            return supplyService.findAllSuppliers(
+            return supplyService.findAllSuppliers(id,
                     searchVal.trim(), pageable);
         } else {
-            return supplyService.findAllSuppliers(pageable);
+            return supplyService.findAllSuppliers(id,pageable);
         }
     }
 

@@ -9,11 +9,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SupplierDTO {
-    private String sku;
-    private String name;
-    private String createdby;
+public class OrderDTO {
+    private int sellerid;
+    private int buyerid;
+    private int itemid;
     private int quantity;
-    private int userid;
-    private double price;
+    private String role;
 }

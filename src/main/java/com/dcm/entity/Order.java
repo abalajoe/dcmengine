@@ -7,9 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 import static jakarta.persistence.FetchType.EAGER;
 
@@ -18,19 +16,24 @@ import static jakarta.persistence.FetchType.EAGER;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "tbl_supplier")
-public class Supplier {
+@Table(name = "tbl_order")
+public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(fetch = EAGER)
-    @JoinColumn(name = "userid", referencedColumnName = "ID")
-    private User userid;
-    private String sku;
-    private String name;
+    @JoinColumn(name = "sellerid", referencedColumnName = "ID")
+    private User sellerid;
+    @ManyToOne(fetch = EAGER)
+    @JoinColumn(name = "buyerid", referencedColumnName = "ID")
+    private User buyerid;
+    @ManyToOne(fetch = EAGER)
+    @JoinColumn(name = "supplier", referencedColumnName = "ID")
+    private Supplier supplier;
+    @ManyToOne(fetch = EAGER)
+    @JoinColumn(name = "orders", referencedColumnName = "ID")
+    private Order orders;
     private int quantity;
-    private double price;
     private int status;
-    private String createdby;
     private LocalDateTime datecreated;
 }

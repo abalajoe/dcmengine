@@ -12,6 +12,7 @@ public interface SupplierRepository extends JpaRepository<Supplier, Integer> {
     Optional<Supplier> findBySkuIgnoreCase(String name);
     Page<Supplier> findAll(Pageable pageable);
     Page<Supplier> findAllByStatus(int status, Pageable pageable);
+    Page<Supplier> findAllByUserid_id(int id, Pageable pageable);
     List<Supplier> findAllByStatus(int status);
     Page<Supplier> findAllByStatusAndSkuContainingIgnoreCase(int status, String sku, Pageable pageable);
 }
