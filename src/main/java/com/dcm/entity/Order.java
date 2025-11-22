@@ -33,6 +33,7 @@ public class Order {
     @ManyToOne(fetch = EAGER)
     @JoinColumn(name = "orders", referencedColumnName = "ID")
     private Order orders;
+    private double price;
     private int quantity;
     private int status;
     private LocalDateTime datecreated;

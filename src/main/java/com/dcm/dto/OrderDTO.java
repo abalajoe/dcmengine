@@ -13,6 +13,7 @@ public class OrderDTO {
     private int sellerid;
     private int buyerid;
     private int itemid;
+    private double price;
     private int quantity;
     private String role;
 }

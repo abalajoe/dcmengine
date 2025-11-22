@@ -58,4 +58,14 @@ public class OrderController {
         log.info("order {}", order);
         return ResponseEntity.ok(order);
     }
+
+    @PutMapping("/order/{id}/{price}")
+    public ResponseEntity<Order> updateSupplier(
+            @PathVariable int id,
+            @PathVariable double price) {
+
+        Order updated = orderService.updatePrice(id, price);
+        log.info("order {}", updated);
+        return ResponseEntity.ok(updated);
+    }
 }

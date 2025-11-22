@@ -11,6 +11,7 @@ import java.util.List;
 
 public interface OrderService {
     Order createOrder(OrderDTO orderDTO);
+    Order updatePrice(int id, double price);
     List<Order> findOrdersReport();
     Page<Order> findAllOrders(int id, Pageable pageable);
     Page<Order> findAllOrders(int id, String search, Pageable pageable);

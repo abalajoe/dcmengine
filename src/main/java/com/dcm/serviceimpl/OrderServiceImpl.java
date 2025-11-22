@@ -49,16 +49,31 @@ public class OrderServiceImpl implements OrderService {
         if (buyer.isEmpty()) throw new EntityNotExistsException("Buyer does not exist");
         if (supplier.isEmpty() && _order.isEmpty()) throw new EntityNotExistsException("Supplier/Order does not exist");
 
+        supplier.ifPresent(value -> value.setQuantity(orderDTO.getQuantity()));
+        _order.ifPresent(value -> value.setQuantity(orderDTO.getQuantity()));
+
         Order order = Order.builder()
                 .sellerid(seller.get())
                 .buyerid(buyer.get())
                 .supplier(supplier.orElse(null))
                 .orders(_order.orElse(null))
                 .quantity(orderDTO.getQuantity())
+                .price(orderDTO.getPrice())
                 .status(1)
                 .datecreated(LocalDateTime.now())
                 .build();
         return orderRepository.save(order);
+    }
+
+    @Override
+    public Order updatePrice(int id, double price) {
+        log.info("updatePrice {} {}", id, price);
+        Optional<Order> order = orderRepository.findById(id);
+        if (order.isEmpty()) throw new EntityNotExistsException("Entity does not exist");
+
+        Order order1 = order.get();
+        order1.setPrice(price);
+        return orderRepository.save(order1);
     }
 
     @Override

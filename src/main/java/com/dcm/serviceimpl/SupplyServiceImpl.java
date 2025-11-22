@@ -83,7 +83,7 @@ public class SupplyServiceImpl implements SupplyService {
         if (id == 0){
             return supplierRepository.findAllByStatus(1, pageable);
         }
-        return supplierRepository.findAllByUserid_id(id, pageable);
+        return supplierRepository.findAllByStatusAndUserid_id(1, id, pageable);
     }
 
     @Override
