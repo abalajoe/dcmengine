@@ -11,4 +11,6 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     Page<Order> findAllByBuyerid(User user, Pageable pageable);
     Page<Order> findByBuyeridAndSupplier_SkuIgnoreCaseContaining(User user, String name, Pageable pageable);
     Page<Order> findBySupplier_SkuIgnoreCaseContaining(String name, Pageable pageable);
+    Page<Order> findAllByBuyeridNot(User user, Pageable pageable);
+    Page<Order> findByBuyeridNotAndSupplier_SkuIgnoreCaseContaining(User user, String name, Pageable pageable);
 }
