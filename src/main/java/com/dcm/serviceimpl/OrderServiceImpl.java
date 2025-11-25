@@ -49,9 +49,18 @@ public class OrderServiceImpl implements OrderService {
         if (buyer.isEmpty()) throw new EntityNotExistsException("Buyer does not exist");
         if (supplier.isEmpty() && _order.isEmpty()) throw new EntityNotExistsException("Supplier/Order does not exist");
 
-        supplier.ifPresent(value -> value.setQuantity(orderDTO.getQuantity()));
-        _order.ifPresent(value -> value.setQuantity(orderDTO.getQuantity()));
+        // supplier.ifPresent(value -> value.setQuantity(orderDTO.getQuantity()));
+        // _order.ifPresent(value -> value.setQuantity(orderDTO.getQuantity()));
+        if (supplier.isPresent()){
+            supplier.get().setQuantity(supplier.get().getQuantity() - orderDTO.getQuantity());
+            supplierRepository.save(supplier.get());
+        }
 
+        if (_order.isPresent()){
+            log.info("order is present ---- {} {}", _order.get().getQuantity(),orderDTO.getQuantity() );
+            _order.get().setQuantity(_order.get().getQuantity() - orderDTO.getQuantity());
+            orderRepository.save(_order.get());
+        }
         Order order = Order.builder()
                 .sellerid(seller.get())
                 .buyerid(buyer.get())
@@ -100,5 +109,22 @@ public class OrderServiceImpl implements OrderService {
         if(user.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
         return orderRepository.findByBuyeridAndSupplier_SkuIgnoreCaseContaining(user.get(), search, pageable);
     }
+
+        @Override
+    public Page<Order> findAllOrdersRetailers(int id, Pageable pageable) {
+
+        Optional<User> user = userRepository.findById(id);
+        if(user.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+        return orderRepository.findAllByBuyeridNot(user.get(), pageable);
+    }
+
+    @Override
+    public Page<Order> findAllOrdersRetailers(int id, String search, Pageable pageable) {
+
+        Optional<User> user = userRepository.findById(id);
+        if(user.isEmpty()) throw new EntityNotExistsException("The entity does not exist");
+        return orderRepository.findByBuyeridNotAndSupplier_SkuIgnoreCaseContaining(user.get(), search, pageable);
+    }
+}
 }
 
