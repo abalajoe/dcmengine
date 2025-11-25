@@ -49,6 +49,29 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/findAllOrdersRetailers")
+    public Page<Order> findAllOrdersRetailers(@RequestParam("id") int id,
+                                        @RequestParam("start") int start,
+                                        @RequestParam("length") int length,
+                                        @RequestParam(value = "searchVal", required = false) String searchVal,
+                                        @RequestParam(defaultValue = "id,desc") String[] sort) {
+        log.info("findAllOrders => id={} start={} length={} sort={} searchVal={}",
+                id, start, length, Arrays.toString(sort), searchVal);
+
+        // ✅ Defensive check — avoid IndexOutOfBounds if client sends malformed sort param
+        String sortField = sort.length > 0 ? sort[0] : "id";
+        String sortDir = sort.length > 1 ? sort[1] : "desc";
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDir.toUpperCase());
+//        Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sort[0]));
+        Pageable pageable = PageRequest.of(start, length, Sort.by(direction, sortField));
+        if (searchVal != null && !searchVal.trim().isEmpty()) {
+            return orderService.findAllOrdersRetailers(id,
+                    searchVal.trim(), pageable);
+        } else {
+            return orderService.findAllOrdersRetailers(id, pageable);
+        }
+    }
 
     @PostMapping("/order")
     public ResponseEntity<Order> create(@RequestBody OrderDTO orderDTO) {
