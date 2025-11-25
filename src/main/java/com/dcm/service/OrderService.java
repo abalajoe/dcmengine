@@ -15,5 +15,6 @@ public interface OrderService {
     List<Order> findOrdersReport();
     Page<Order> findAllOrders(int id, Pageable pageable);
     Page<Order> findAllOrders(int id, String search, Pageable pageable);
-
+    Page<Order> findAllOrdersRetailers(int id, Pageable pageable);
+    Page<Order> findAllOrdersRetailers(int id, String search, Pageable pageable);
 }
